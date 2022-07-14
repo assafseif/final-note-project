@@ -43,23 +43,23 @@ export const signup = async (req, res, next) => {
       }
     });
     const result = await user.save();
-    const sendedemail = await transporter.sendMail({
-      from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
-      to: email, // list of receivers
-      subject: "Hello to assaf  ✔", // Subject line
-      text: "welcome for submitting", // plain text body
-      html: `
-  <h2>Thanks for signing up with Assaf !
-  You must follow this link within 1 hour of registration to activate your account:</h2>
-    <a href="${URL}/auth/reset/${token}">Click Here</a>
-    <h3>Have fun, and don't hesitate to contact us with your feedback.<h3>
-  
-       <a href="http://localhost:8080/about">The Assaf Team!</a>`,
-    });
+    //   const sendedemail = await transporter.sendMail({
+    //     from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
+    //     to: email, // list of receivers
+    //     subject: "Hello to assaf  ✔", // Subject line
+    //     text: "welcome for submitting", // plain text body
+    //     html: `
+    // <h2>Thanks for signing up with Assaf !
+    // You must follow this link within 1 hour of registration to activate your account:</h2>
+    //   <a href="${URL}/auth/reset/${token}">Click Here</a>
+    //   <h3>Have fun, and don't hesitate to contact us with your feedback.<h3>
 
-    if (sendedemail) {
-      console.log('email has beed send')
-    }
+    //      <a href="http://localhost:8080/about">The Assaf Team!</a>`,
+    //   });
+
+    //   if (sendedemail) {
+    //     console.log('email has beed send')
+    //   }
 
     res.status(201).json({
       message: 'User created!',
@@ -90,11 +90,18 @@ export const login = async (req, res, next) => {
       error.statusCode = 401;
       throw error;
     }
-    if (user.wrongPassword.Forbidden) {
+    if (user.wrongPassword.Forbidden && Date.now() < user.wrongPassword.ForbiddenTime.getTime()) {
 
-      const error = new Error(`you are forbidden and you still have ${new Date(user.wrongPassword.ForbiddenTime.getTime() + 30 * 60000)}`)
-      error.statusCode = 403;
-      throw error;
+      const result = user.wrongPassword.ForbiddenTime.getTime()
+      const d = Date.now();
+      console.log(result-d)
+      const remaining = (result-d) / 60000;
+      console.log(remaining)
+
+      return res.json({ message: `you are forbidden and you still have ${remaining} minute` })
+      // const error = new Error(`you are forbidden and you still have ${remaining} minute`)
+      // error.statusCode = 403;
+      // throw error;
     }
 
     loadedUser = user;
@@ -105,18 +112,18 @@ export const login = async (req, res, next) => {
       console.log(user.wrongPassword.Attempt)
       if (user.wrongPassword.Attempt === 3) {
         user.wrongPassword.Forbidden = true;
-        user.wrongPassword.ForbiddenTime = Date.now() + 900000;
+        user.wrongPassword.ForbiddenTime = Date.now() + 90000;
         console.log(user.wrongPassword)
-        
-      await user.save();
+
+        await user.save();
         const error = new Error(`you are forbidden for ${user.wrongPassword.ForbiddenTime}  `)
         error.statusCode = 403;
         throw error;
 
       }
-      
+
       await user.save();
-      res.status(401).json({message:"wrong password"})
+      res.status(401).json({ message: "wrong password" })
       // error.statusCode = 401;
       // throw error;
     }
