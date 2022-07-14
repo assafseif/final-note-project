@@ -8,8 +8,8 @@ if (process.env.PORT) {
   URL = 'https://final-for-eurisko.herokuapp.com';
 }
 
-//  import nodemailer from 'nodemailer'
-//  import transporter from '../util/nodemailer.js'
+ import nodemailer from 'nodemailer'
+ import transporter from '../util/nodemailer.js'
 
 import User from '../models/user.js'
 
@@ -43,23 +43,23 @@ export const signup = async (req, res, next) => {
       }
     });
     const result = await user.save();
-    //   const sendedemail = await transporter.sendMail({
-    //     from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
-    //     to: email, // list of receivers
-    //     subject: "Hello to assaf  ✔", // Subject line
-    //     text: "welcome for submitting", // plain text body
-    //     html: `
-    // <h2>Thanks for signing up with Assaf !
-    // You must follow this link within 1 hour of registration to activate your account:</h2>
-    //   <a href="${URL}/auth/reset/${token}">Click Here</a>
-    //   <h3>Have fun, and don't hesitate to contact us with your feedback.<h3>
+      const sendedemail = await transporter.sendMail({
+        from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
+        to: email, // list of receivers
+        subject: "Hello to assaf  ✔", // Subject line
+        text: "welcome for submitting", // plain text body
+        html: `
+    <h2>Thanks for signing up with Assaf !
+    You must follow this link within 1 hour of registration to activate your account:</h2>
+      <a href="${URL}/auth/reset/${token}">Click Here</a>
+      <h3>Have fun, and don't hesitate to contact us with your feedback.<h3>
 
-    //      <a href="http://localhost:8080/about">The Assaf Team!</a>`,
-    //   });
+         <a href="http://localhost:8080/about">The Assaf Team!</a>`,
+      });
 
-    //   if (sendedemail) {
-    //     console.log('email has beed send')
-    //   }
+      if (sendedemail) {
+        console.log('email has beed send')
+      }
 
     res.status(201).json({
       message: 'User created!',
