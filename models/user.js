@@ -22,7 +22,12 @@ const userSchema= new Schema({
     }
     ,
     userToken:String,
-    userTokenExpires:Date
+    userTokenExpires:Date,
+    wrongPassword :{
+        Attempt:Number,
+        Forbidden:Boolean,
+        ForbiddenTime:Date
+    }
 
 
 })
