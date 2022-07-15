@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "NODE_ENV=production node app.js",
-    "start:server": " SET NODE_ENV=production&&SET MONGO_USER=tester&&SET MONGO_PASSWORD=euriskomobility&&SET EMAIL=Assafaseif@outlook.com&&SET EMAIL_PASSWORD=OUD3assafseif&&     nodemon app.js",
+    "start:server": " SET NODE_ENV=production&&SET MONGO_USER=tester&&SET MONGO_PASSWORD=euriskomobility&&SET EMAIL=assaf_seif@outlook.com&&SET EMAIL_PASSWORD=OUD3assafseif&&     nodemon app.js",
     "test": "mocha --timeout 10000"
   },
   "type": "module",
