@@ -220,10 +220,10 @@ export const getVerified = async (req, res, next) => {
     const user = await User.findOne({ userToken: resetToken, userTokenExpires: { $gt: Date.now() } })
 
     if (!user) {
-     return  res.json(401).json({error:'we cant find user with this token'})
-      // const error = new Error('we cant find user with this token')
-      // error.statusCode = 401;
-      // throw error;
+    
+      const error = new Error('we cant find user with this token')
+      error.statusCode = 401;
+      throw error;
     }
 
     user.emailVerified = true;
