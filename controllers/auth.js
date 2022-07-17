@@ -111,6 +111,7 @@ console.log(checkIp)
       const token = crypto.randomBytes(32).toString('hex')
       user.IpAddress.IpToken=token;
       user.IpAddress.IpTokenExpires=Date.now() + 3600000;
+      await user.save()
       await transporter.sendMail({
         from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
         to: email,
@@ -207,6 +208,7 @@ return      res.status(301).json({token:token,message:'please check your enail t
 };
 
 
+
 export const getVerified = async (req, res, next) => {
   const resetToken = req.params.token;
   //
@@ -260,7 +262,40 @@ export const test = async (req, res, next) => {
 
 }
 
+export const postResetpassword = async (req, res, next) => {
+  const error = validationResult(req);
+  if (!error.isEmpty()) {
+    const error = new Error('Password validation error ');
+    error.statusCode = 422;
+    throw error;
 
+  }
+  const token = req.params.token;
+  const password = req.body.password;
+  const user = await User.findOne({ userToken: token, userTokenExpires: { $gt: Date.now() } })
+
+  if (!user) {
+    const error = new Error('no user');
+    error.statusCode = 404;
+    throw error;
+  }
+  console.log(password);
+
+  const hashedpassword = await bcrypt.hash(password, 12)
+
+  user.password = hashedpassword;
+  user.userToken = '';
+  user.userTokenExpires = 0;
+  const usersaved = await user.save();
+
+  res.status(201).json({
+    message: "user password changed",
+    newpassword: usersaved.password
+  })
+
+
+
+}
 
 export const getResetpassword = async (req, res, next) => {
   const email = req.body.email;
@@ -332,37 +367,20 @@ export const changePassword = async (req, res, next) => {
 
 }
 
-export const postResetpassword = async (req, res, next) => {
-  const error = validationResult(req);
-  if (!error.isEmpty()) {
-    const error = new Error('Password validation error ');
-    error.statusCode = 422;
-    throw error;
+export const IpVerification=async(req,res,next)=>{
 
-  }
+try{
   const token = req.params.token;
-  const password = req.body.password;
-  const user = await User.findOne({ userToken: token, userTokenExpires: { $gt: Date.now() } })
+  const user = await User.findOne({"IpAddress.IpToken":token,"IpAddress.IpTokenExpires": { $gt: Date.now() }});
+  let clientIp = requestip.getClientIp(req);
+  
+  
+  user.IpAddress.Ip.push(clientIp);// we can also check if the ip is the same when he tried to login but 
+  user.IpAddress.IpToken='';
+  user.IpAddress.IpTokenExpires=0;
+  const updatedUser =await user.save()
 
-  if (!user) {
-    const error = new Error('no user');
-    error.statusCode = 404;
-    throw error;
-  }
-  console.log(password);
-
-  const hashedpassword = await bcrypt.hash(password, 12)
-
-  user.password = hashedpassword;
-  user.userToken = '';
-  user.userTokenExpires = 0;
-  const usersaved = await user.save();
-
-  res.status(201).json({
-    message: "user password changed",
-    newpassword: usersaved.password
-  })
-
+}catch(err){next(err)}
 
 
 }
