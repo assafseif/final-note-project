@@ -372,13 +372,13 @@ console.log('IpVerificcation')
 try{
   const token = req.params.token;
   console.log(token)
-  const user = await User.findOne({"$IpAddress.IpToken":token,"$IpAddress.IpTokenExpires": { $gt: Date.now() }});
+  const user = await User.findOne({"IpAddress.IpToken":token,"IpAddress.IpTokenExpires": { $gt: Date.now() }});
+  console.log(user)
   if (!user) {
     const error = new Error('No user found');
     error.statusCode = 404;
     throw error;
   }
-  console.log(user)
   
   let clientIp = requestip.getClientIp(req);
   
