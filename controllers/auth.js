@@ -1,8 +1,10 @@
 import { validationResult } from 'express-validator'
+import requestip from 'request-ip'
 import mongoose from 'mongoose'
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import bcrypt from 'bcryptjs'
+import PDFDocument from 'pdfkit'
 let URL = 'http://localhost:8080';
 if (process.env.PORT) {
   URL = 'https://final-for-eurisko.herokuapp.com';
@@ -14,6 +16,8 @@ import transporter from '../util/nodemailer.js'
 import User from '../models/user.js'
 
 export const signup = async (req, res, next) => {
+  let clientIp = requestip.getClientIp(req);
+  console.log(clientIp);
   console.log('hone')
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -28,11 +32,11 @@ export const signup = async (req, res, next) => {
   const token = crypto.randomBytes(32).toString('hex')
   console.log(token)
   try {
-    const hashedPw = await bcrypt.hash(password, 12);
+    const hashedpassword = await bcrypt.hash(password, 12);
 
     const user = new User({
       email: email,
-      password: hashedPw,
+      password: hashedpassword,
       name: name,
       userToken: token,
       userTokenExpires: Date.now() + 3600000,
@@ -85,7 +89,7 @@ export const login = async (req, res, next) => {
       error.statusCode = 401;
       throw error;
     }
-    if (user.emailVerified) {
+    if (!user.emailVerified) {
       const error = new Error('Not authorized please verify your email first');
       error.statusCode = 401;
       throw error;
@@ -96,7 +100,7 @@ export const login = async (req, res, next) => {
 
       if (user.wrongPassword.Forbidden) {
         console.log(user.wrongPassword.Forbidden)
-        const error = new Error(`you are forbidden we advice you wo contact us 1`)
+        const error = new Error(`you are forbidden we advice you wo contact us!`)
         error.statusCode = 403;
         throw error;
       }
@@ -108,31 +112,20 @@ export const login = async (req, res, next) => {
         Forbiddentemporary = true;
       }
 
-      const error = new Error(`you are forbidden and you still have ${remaining} minute`)
+      const error = new Error(`you are forbidden and you still have ${remaining} minute  Be carfully this is ur last attempt!`)
       error.statusCode = 403;
       throw error;
     }
 
-    loadedUser = user;
     const isEqual = await bcrypt.compare(password, user.password);
-    if (user.wrongPassword.Attempt === 0) {
-      if (!isEqual) {
-        const error = new Error(`you are forbidden we advice you wo contact  us 2`)
+    if (user.wrongPassword.Attempt === 0 && !isEqual) {
+      
+        const error = new Error(`Oops! you are forbidden please contact us`)
         user.wrongPassword.Forbidden = true
         await user.save()
         error.statusCode = 403;
         throw error;
-      }
-      if (isEqual) {
-        const wrongPassword = {
-          Attempt: 3,
-          Forbidden: false,
-          ForbiddenTime: 0
-        }
-        user.wrongPassword =wrongPassword;
-        await user.save()
-      }
-
+      
     }
     if (!isEqual) {
       user.wrongPassword.Attempt = user.wrongPassword.Attempt - 1;
@@ -147,23 +140,30 @@ export const login = async (req, res, next) => {
         throw error;
 
       }
-
       await user.save();
 
       const error = new Error('Wrong password!');
       error.statusCode = 401;
       throw error;
     }
+    const wrongPassword = {
+      Attempt: 3,
+      Forbidden: false,
+      ForbiddenTime: 0
+    }
+    user.wrongPassword =wrongPassword;
+
+    await user.save();
     const token = jwt.sign(
       {
-        email: loadedUser.email,
-        userId: loadedUser._id.toString()
+        email: user.email,
+        userId: user._id.toString()
       },
       'secret',
       { expiresIn: '1h' }
     );
-    res.status(200).json({ token: token, userId: loadedUser._id.toString() });
-    return;
+    res.status(200).json({ token: token, userId: user._id.toString() });
+    return user;
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
@@ -187,6 +187,8 @@ export const getVerified = async (req, res, next) => {
     }
 
     user.emailVerified = true;
+    user.userToken=''
+    user.userTokenExpires=0;
     const newuser = await user.save()
 
     res.status(200).json({
@@ -198,7 +200,32 @@ export const getVerified = async (req, res, next) => {
   } catch (err) { console.log(err), next(err) }
 }
 
+export const test =async(req,res,next)=>{
+  console.log(req.file)
 
+  // var myDoc = new PDFDocument({bufferPages: true});
+
+  // let buffers = [];
+  // myDoc.on('data', buffers.push.bind(buffers));
+  // myDoc.on('end', () => {
+  
+  //     let pdfData = Buffer.concat(buffers);
+  //     res.writeHead(200, {
+  //     'Content-Length': Buffer.byteLength(pdfData),
+  //     'Content-Type': 'application/pdf',
+  //     'Content-disposition': 'attachment;filename=test.pdf',})
+  //     .end(pdfData);
+  
+  // });
+  
+  // myDoc.font('Times-Roman')
+  //      .fontSize(12)
+  //      .text(`this is a test text`);
+  // myDoc.end();
+
+
+
+}
 
 
 
@@ -246,8 +273,31 @@ export const getResetpassword = async (req, res, next) => {
 
 }
 
+export const changePassword = async (req,res,next)=>{
+  const error = validationResult(req);
+  if (!error.isEmpty()) {
+    const error = new Error('Password validation error ');
+    error.statusCode = 422;
+    throw error;
+
+  }
+  try{
+    const user = await User.findOne({_id:req.userId})
+   const oldPassword = req.body.oldPassword;
+   const newPassword = req.body.newPassword;
+  const isEqual =  await bcrypt.compare(oldPassword,user.password);
+  if(!isEqual)return res.status(422).json({message:"The provided credentials are incorrect"})
+
+ let hashedpassword = await bcrypt.hash(newPassword,12)
+   user.password =hashedpassword;
+const updateduser = await user.save()
+ res.status(200).json({message: 'Password has been changed'})
+
+    return updateduser;
+  }catch(err){next(err)}
 
 
+}
 
 export const postResetpassword = async (req, res, next) => {
   const error = validationResult(req);
@@ -271,6 +321,8 @@ export const postResetpassword = async (req, res, next) => {
   const hashedpassword = await bcrypt.hash(password, 12)
 
   user.password = hashedpassword;
+  user.userToken='';
+  user.userTokenExpires=0;
   const usersaved = await user.save();
 
   res.status(201).json({
