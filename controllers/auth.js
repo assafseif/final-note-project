@@ -84,6 +84,7 @@ export const signup = async (req, res, next) => {
 export const login = async (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
+  let clientIp = requestip.getClientIp(req);
   let loadedUser;
   try {
     const user = await User.findOne({ email: email });
@@ -97,6 +98,9 @@ export const login = async (req, res, next) => {
       error.statusCode = 401;
       throw error;
     }
+    const IpExist =  await User.findOne({Ip:[clientIp]})
+
+    console.log('*********', IpExist ,'*******')
     let Forbiddentemporary;
     if (user.wrongPassword.Forbidden || Date.now() < user.wrongPassword.ForbiddenTime.getTime()) {
 
