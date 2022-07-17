@@ -103,7 +103,7 @@ export const login = async (req, res, next) => {
     //   error.statusCode = 401;
     //   throw error;
     // }
-    const checkIp = await User.find({ "IpAddress.Ip": { "$in" : [clientIp]} })
+    const checkIp = await User.find({ "IpAddress.Ip": { "$in" : [clientIp]} ,_id:user._id})
     console.log(clientIp)
 console.log(checkIp)
     if (checkIp.length <= 0) {
