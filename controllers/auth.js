@@ -16,7 +16,7 @@ import transporter from '../util/nodemailer.js'
 import User from '../models/user.js'
 
 export const signup = async (req, res, next) => {
-  
+
   let clientIp = requestip.getClientIp(req);
   console.log(clientIp);
   console.log('hone')
@@ -41,14 +41,19 @@ export const signup = async (req, res, next) => {
       name: name,
       userToken: token,
       userTokenExpires: Date.now() + 3600000,
-      Ip:[clientIp],
+      IpAddress: {
+        Ip: [clientIp],
+        IpToken: '',
+        IpTokenExpires: 0
+
+      }
+      ,
       wrongPassword: {
         Attempt: 3,
         Forbidden: false,
         ForbiddenTime: 0
       }
     });
-    //user.Ip.push()
     const result = await user.save();
     const sendedemail = await transporter.sendMail({
       from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
@@ -93,14 +98,34 @@ export const login = async (req, res, next) => {
       error.statusCode = 401;
       throw error;
     }
-    if (!user.emailVerified) {
-      const error = new Error('Not authorized please verify your email first');
-      error.statusCode = 401;
-      throw error;
-    }
-    const IpExist =  await User.findOne({Ip:[clientIp]})
+    // if (!user.emailVerified) {
+    //   const error = new Error('Not authorized please verify your email first');
+    //   error.statusCode = 401;
+    //   throw error;
+    // }
+    const IpExist = await User.findOne({ "$IpAddress.Ip": [clientIp] })
 
-    console.log('*********', IpExist ,'*******')
+    if (!IpExist) {
+
+      const token = crypto.randomBytes(32).toString('hex')
+      user.IpAddress.IpToken=token;
+      user.IpAddress.IpTokenExpires=Date.now() + 3600000;
+      await transporter.sendMail({
+        from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
+        to: email,
+        subject: "Verify Login from New Location", // Subject line
+        text: `Welcome ${user.name} Lagain !`, // plain text body
+        html: `<h1>IP ADDRESS : ${clientIp} </h1>
+              <h2>It looks like someone tried to log into your account from a new location.
+               If this is you, follow the link below to authorize logging in from this location on your account.
+               If this isn't you, we suggest changing your password as soon as possible.</h2>
+                  <a href="${URL}/auth/ipVerification/${token}">Click Here</a>
+    
+                     <a href="${URL}/about">The Assaf Team!</a>`,
+      });
+      res.status(301).json({token:token,message:'please check your enail to verify this new location'})
+    }
+
     let Forbiddentemporary;
     if (user.wrongPassword.Forbidden || Date.now() < user.wrongPassword.ForbiddenTime.getTime()) {
 
@@ -126,13 +151,13 @@ export const login = async (req, res, next) => {
 
     const isEqual = await bcrypt.compare(password, user.password);
     if (user.wrongPassword.Attempt === 0 && !isEqual) {
-      
-        const error = new Error(`Oops! you are forbidden please contact us`)
-        user.wrongPassword.Forbidden = true
-        await user.save()
-        error.statusCode = 403;
-        throw error;
-      
+
+      const error = new Error(`Oops! you are forbidden please contact us`)
+      user.wrongPassword.Forbidden = true
+      await user.save()
+      error.statusCode = 403;
+      throw error;
+
     }
     if (!isEqual) {
       user.wrongPassword.Attempt = user.wrongPassword.Attempt - 1;
@@ -158,7 +183,7 @@ export const login = async (req, res, next) => {
       Forbidden: false,
       ForbiddenTime: 0
     }
-    user.wrongPassword =wrongPassword;
+    user.wrongPassword = wrongPassword;
 
     await user.save();
     const token = jwt.sign(
@@ -194,8 +219,8 @@ export const getVerified = async (req, res, next) => {
     }
 
     user.emailVerified = true;
-    user.userToken=''
-    user.userTokenExpires=0;
+    user.userToken = ''
+    user.userTokenExpires = 0;
     const newuser = await user.save()
 
     res.status(200).json({
@@ -207,7 +232,7 @@ export const getVerified = async (req, res, next) => {
   } catch (err) { console.log(err), next(err) }
 }
 
-export const test =async(req,res,next)=>{
+export const test = async (req, res, next) => {
   console.log(req.file)
 
   // var myDoc = new PDFDocument({bufferPages: true});
@@ -215,16 +240,16 @@ export const test =async(req,res,next)=>{
   // let buffers = [];
   // myDoc.on('data', buffers.push.bind(buffers));
   // myDoc.on('end', () => {
-  
+
   //     let pdfData = Buffer.concat(buffers);
   //     res.writeHead(200, {
   //     'Content-Length': Buffer.byteLength(pdfData),
   //     'Content-Type': 'application/pdf',
   //     'Content-disposition': 'attachment;filename=test.pdf',})
   //     .end(pdfData);
-  
+
   // });
-  
+
   // myDoc.font('Times-Roman')
   //      .fontSize(12)
   //      .text(`this is a test text`);
@@ -280,7 +305,7 @@ export const getResetpassword = async (req, res, next) => {
 
 }
 
-export const changePassword = async (req,res,next)=>{
+export const changePassword = async (req, res, next) => {
   const error = validationResult(req);
   if (!error.isEmpty()) {
     const error = new Error('Password validation error ');
@@ -288,20 +313,20 @@ export const changePassword = async (req,res,next)=>{
     throw error;
 
   }
-  try{
-    const user = await User.findOne({_id:req.userId})
-   const oldPassword = req.body.oldPassword;
-   const newPassword = req.body.newPassword;
-  const isEqual =  await bcrypt.compare(oldPassword,user.password);
-  if(!isEqual)return res.status(422).json({message:"The provided credentials are incorrect"})
+  try {
+    const user = await User.findOne({ _id: req.userId })
+    const oldPassword = req.body.oldPassword;
+    const newPassword = req.body.newPassword;
+    const isEqual = await bcrypt.compare(oldPassword, user.password);
+    if (!isEqual) return res.status(422).json({ message: "The provided credentials are incorrect" })
 
- let hashedpassword = await bcrypt.hash(newPassword,12)
-   user.password =hashedpassword;
-const updateduser = await user.save()
- res.status(200).json({message: 'Password has been changed'})
+    let hashedpassword = await bcrypt.hash(newPassword, 12)
+    user.password = hashedpassword;
+    const updateduser = await user.save()
+    res.status(200).json({ message: 'Password has been changed' })
 
     return updateduser;
-  }catch(err){next(err)}
+  } catch (err) { next(err) }
 
 
 }
@@ -328,8 +353,8 @@ export const postResetpassword = async (req, res, next) => {
   const hashedpassword = await bcrypt.hash(password, 12)
 
   user.password = hashedpassword;
-  user.userToken='';
-  user.userTokenExpires=0;
+  user.userToken = '';
+  user.userTokenExpires = 0;
   const usersaved = await user.save();
 
   res.status(201).json({

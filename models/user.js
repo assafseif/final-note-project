@@ -20,11 +20,13 @@ const userSchema = new Schema({
         type: Boolean,
         default: false
     },
-    Ip:[{
-        type:String,
-        requried:true
-    }]
-    ,
+
+    IpAddress: {
+        Ip: [{ type: String, requried: true }],
+        IpToken: String,
+        IpTokenExpires: Date,
+
+    },
     userToken: String,
     userTokenExpires: Date,
     wrongPassword: {
