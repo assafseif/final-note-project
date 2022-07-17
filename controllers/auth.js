@@ -16,6 +16,7 @@ import transporter from '../util/nodemailer.js'
 import User from '../models/user.js'
 
 export const signup = async (req, res, next) => {
+  fucntio asdhaksd(asdd)asdasd56  q4
   let clientIp = requestip.getClientIp(req);
   console.log(clientIp);
   console.log('hone')
