@@ -100,11 +100,11 @@ export const login = async (req, res, next) => {
       error.statusCode = 401;
       throw error;
     }
-    // if (!user.emailVerified) {
-    //   const error = new Error('Not authorized please verify your email first');
-    //   error.statusCode = 401;
-    //   throw error;
-    // }
+    if (!user.emailVerified) {
+      const error = new Error('Not authorized please verify your email first');
+      error.statusCode = 401;
+      throw error;
+    }
     const checkIp = await User.find({ "IpAddress.Ip": { "$in" : [clientIp]} ,_id:user._id})
     console.log(clientIp)
 console.log(checkIp)
