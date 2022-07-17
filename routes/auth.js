@@ -39,6 +39,8 @@ router.post('/login',AuthController.login);
   router.post('/reset/:token',AuthController.getVerified);
 
 router.get('/reset/password',isauth,AuthController.getResetpassword);
+
+
 router.patch('/change/password',isauth,
 [
     body('newPassword')
@@ -46,11 +48,19 @@ router.patch('/change/password',isauth,
     .trim()
 ]
 ,AuthController.changePassword);
+
 router.post('/testpdf',AuthController.test)
+
 
 router.patch('/reset/password/:token',[
     body('password')
     .isLength({min:5})
     .trim()
-],AuthController.postResetpassword);
+],isauth,AuthController.postResetpassword);
+
+router.patch('/IpVerification',AuthController.IpVerification)
+
+
+
+
 export default router;
