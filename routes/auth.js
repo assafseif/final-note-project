@@ -58,7 +58,7 @@ router.patch('/reset/password/:token',[
     .trim()
 ],isauth,AuthController.postResetpassword);
 
-router.patch('/IpVerification',AuthController.IpVerification)
+router.patch('/IpVerification/:token',AuthController.IpVerification)
 
 
 
