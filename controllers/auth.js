@@ -55,6 +55,7 @@ export const signup = async (req, res, next) => {
       }
     });
     const result = await user.save();
+    //console.log('before sending email;')
     const sendedemail = await transporter.sendMail({
       from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
       to: email, // list of receivers
@@ -70,14 +71,15 @@ export const signup = async (req, res, next) => {
     });
 
     if (sendedemail) {
-      console.log('email has beed send')
+      console.log('sending email : DONE!')
     }
 
     res.status(201).json({
-      message: 'User created!',
-      message: 'email sended',
+       message: 'User created!',
+      message_email: 'email sended',
       user: user
     });
+    return sendedemail
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
@@ -111,6 +113,7 @@ console.log(checkIp)
       const token = crypto.randomBytes(32).toString('hex')
       user.IpAddress.IpToken=token;
       user.IpAddress.IpTokenExpires=Date.now() + 3600000;
+      console.log('sending token.....')
       await user.save()
       await transporter.sendMail({
         from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
@@ -165,7 +168,7 @@ return      res.status(301).json({token:token,message:'please check your enail t
       user.wrongPassword.Attempt = user.wrongPassword.Attempt - 1;
       console.log(user.wrongPassword.Attempt)
       if (user.wrongPassword.Attempt === 0) {
-        user.wrongPassword.ForbiddenTime = Date.now() + 90000;
+        user.wrongPassword.ForbiddenTime = Date.now() + 900000;
         console.log(user.wrongPassword)
 
         await user.save();
@@ -371,9 +374,9 @@ export const IpVerification=async(req,res,next)=>{
 console.log('IpVerificcation')
 try{
   const token = req.params.token;
-  console.log(token)
+  //console.log(token)
   const user = await User.findOne({"IpAddress.IpToken":token,"IpAddress.IpTokenExpires": { $gt: Date.now() }});
-  console.log(user)
+  //console.log(user)
   if (!user) {
     const error = new Error('No user found');
     error.statusCode = 404;
@@ -388,7 +391,7 @@ try{
   user.IpAddress.IpTokenExpires=0;
   const updatedUser =await user.save()
   res.status(200).json({message:"Done! You can now login from this new location "})
-
+return updatedUser;
 }catch(err){next(err)}
 
 
