@@ -19,7 +19,11 @@ const userSchema = new Schema({
     emailVerified: {
         type: Boolean,
         default: false
-    }
+    },
+    Ip:[{
+        type:String,
+        requried:true
+    }]
     ,
     userToken: String,
     userTokenExpires: Date,

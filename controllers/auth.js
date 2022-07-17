@@ -41,12 +41,14 @@ export const signup = async (req, res, next) => {
       name: name,
       userToken: token,
       userTokenExpires: Date.now() + 3600000,
+      Ip:[clientIp],
       wrongPassword: {
         Attempt: 3,
         Forbidden: false,
         ForbiddenTime: 0
       }
     });
+    //user.Ip.push()
     const result = await user.save();
     const sendedemail = await transporter.sendMail({
       from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
