@@ -368,10 +368,18 @@ export const changePassword = async (req, res, next) => {
 }
 
 export const IpVerification=async(req,res,next)=>{
-
+console.log('IpVerificcation')
 try{
   const token = req.params.token;
-  const user = await User.findOne({"IpAddress.IpToken":token,"IpAddress.IpTokenExpires": { $gt: Date.now() }});
+  console.log(token)
+  const user = await User.findOne({"$IpAddress.IpToken":token,"$IpAddress.IpTokenExpires": { $gt: Date.now() }});
+  if (!user) {
+    const error = new Error('No user found');
+    error.statusCode = 404;
+    throw error;
+  }
+  console.log(user)
+  
   let clientIp = requestip.getClientIp(req);
   
   
@@ -379,6 +387,7 @@ try{
   user.IpAddress.IpToken='';
   user.IpAddress.IpTokenExpires=0;
   const updatedUser =await user.save()
+  res.status(200).json({message:"Done! You can now login from this new location "})
 
 }catch(err){next(err)}
 
