@@ -103,9 +103,10 @@ export const login = async (req, res, next) => {
     //   error.statusCode = 401;
     //   throw error;
     // }
-    const IpExist = await User.findOne({ "$IpAddress.Ip": [clientIp] })
-
-    if (!IpExist) {
+    const checkIp = await User.find({ "IpAddress.Ip": { "$in" : [clientIp]} })
+    console.log(clientIp)
+console.log(checkIp)
+    if (checkIp.length <= 0) {
 
       const token = crypto.randomBytes(32).toString('hex')
       user.IpAddress.IpToken=token;
@@ -123,7 +124,7 @@ export const login = async (req, res, next) => {
     
                      <a href="${URL}/about">The Assaf Team!</a>`,
       });
-      res.status(301).json({token:token,message:'please check your enail to verify this new location'})
+return      res.status(301).json({token:token,message:'please check your enail to verify this new location'})
     }
 
     let Forbiddentemporary;
