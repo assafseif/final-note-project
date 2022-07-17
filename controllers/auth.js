@@ -64,7 +64,7 @@ export const signup = async (req, res, next) => {
       html: `
     <h2>Thanks for signing up with Assaf !
     You must follow this link within 1 hour of registration to activate your account:</h2>
-      <a href="${URL}/auth/reset/${token}">Click Here</a>
+      <a href="${URL}/getverified/${token}">Click Here</a>
       <h3>Have fun, and don't hesitate to contact us with your feedback.<h3>
 
          <a href="http://localhost:8080/about">The Assaf Team!</a>`,
