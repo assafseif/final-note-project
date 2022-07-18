@@ -10,8 +10,10 @@ if (process.env.PORT) {
   URL = 'https://final-for-eurisko.herokuapp.com';
 }
 
-import nodemailer from 'nodemailer'
-import transporter from '../util/nodemailer.js'
+// import nodemailer from 'nodemailer'
+// import transporter from '../util/nodemailer.js'
+let nodemailer;
+let transporter;
 
 import User from '../models/user.js'
 
@@ -100,36 +102,12 @@ export const login = async (req, res, next) => {
       error.statusCode = 401;
       throw error;
     }
-    if (!user.emailVerified) {
-      const error = new Error('Not authorized please verify your email first');
-      error.statusCode = 401;
-      throw error;
-    }
-    const checkIp = await User.find({ "IpAddress.Ip": { "$in" : [clientIp]} ,_id:user._id})
-    console.log(clientIp)
-console.log(checkIp)
-    if (checkIp.length <= 0) {
-
-      const token = crypto.randomBytes(32).toString('hex')
-      user.IpAddress.IpToken=token;
-      user.IpAddress.IpTokenExpires=Date.now() + 3600000;
-      console.log('sending token.....')
-      await user.save()
-      await transporter.sendMail({
-        from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
-        to: email,
-        subject: "Verify Login from New Location", // Subject line
-        text: `Welcome ${user.name} Lagain !`, // plain text body
-        html: `<h1>IP ADDRESS : ${clientIp} </h1>
-              <h2>It looks like someone tried to log into your account from a new location.
-               If this is you, follow the link below to authorize logging in from this location on your account.
-               If this isn't you, we suggest changing your password as soon as possible.</h2>
-                  <a href="${URL}/auth/ipVerification/${token}">Click Here</a>
-    
-                     <a href="${URL}/about">The Assaf Team!</a>`,
-      });
-return      res.status(301).json({token:token,message:'please check your enail to verify this new location'})
-    }
+    // if (!user.emailVerified) {
+    //   const error = new Error('Not authorized please verify your email first');
+    //   error.statusCode = 401;
+    //   throw error;
+    // }
+   
 
     let Forbiddentemporary;
     if (user.wrongPassword.Forbidden || Date.now() < user.wrongPassword.ForbiddenTime.getTime()) {
@@ -197,8 +175,32 @@ return      res.status(301).json({token:token,message:'please check your enail t
         userId: user._id.toString()
       },
       'secret',
-      { expiresIn: '1h' }
+      { expiresIn: '24h' }
     );
+    const checkIp = await User.find({ "IpAddress.Ip": { "$in" : [clientIp]} ,_id:user._id})
+   
+    if (checkIp.length <= 0) {
+
+      const token = crypto.randomBytes(32).toString('hex')
+      user.IpAddress.IpToken=token;
+      user.IpAddress.IpTokenExpires=Date.now() + 3600000;
+      console.log('sending token.....')
+      await user.save()
+      await transporter.sendMail({
+        from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
+        to: email,
+        subject: "Verify Login from New Location", // Subject line
+        text: `Welcome ${user.name} Lagain !`, // plain text body
+        html: `<h1>IP ADDRESS : ${clientIp} </h1>
+              <h2>It looks like someone tried to log into your account from a new location.
+               If this is you, follow the link below to authorize logging in from this location on your account.
+               If this isn't you, we suggest changing your password as soon as possible.</h2>
+                  <a href="${URL}/auth/ipVerification/${token}">Click Here</a>
+    
+                     <a href="${URL}/about">The Assaf Team!</a>`,
+      });
+return      res.status(301).json({token:token,message:'please check your enail to verify this new location'})
+    }
     res.status(200).json({ token: token, userId: user._id.toString() });
     return user;
   } catch (err) {

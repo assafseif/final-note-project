@@ -35,9 +35,9 @@ const userSchema = new Schema({
         ForbiddenTime: Date
     }
     ,
-    posts: [{
+    notes: [{
         type: Schema.Types.ObjectId,
-        ref: 'Post'
+        ref: 'Note'
     }]
 
 }
