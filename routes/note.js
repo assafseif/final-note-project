@@ -23,6 +23,6 @@ router.put('/edit-note/:noteId',[
 ],isAuth,noteController.editNote)
 
 router.delete('/delete-note/:noteId',isAuth,noteController.deleteNote)
-router.get('/get-notes/:tagId',isAuth,noteController.fetchAll)
+router.get('/get-notes',isAuth,noteController.fetchAll)
 //router.get('/get-Notes-tags/:tagId',isAuth,noteController.fetchByTags)
 export default router;

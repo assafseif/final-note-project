@@ -247,79 +247,69 @@ export const deleteNote = async (req, res, next) => {
 }
 
 export const fetchAll = async (req, res, next) => {
+    //get-notes?tag=guitar&page=2&category=sport&sort=true&order=-1
 
-    const tagId = req.params.tagId
-        console.log('bel tagId')
-    let page = req.query.page;
-    const obj = {
-        creator: req.userId, hashtags: tagId
+    const tagid = req.query.tag
+    let tagId;
+    if(tagid){
+      
+     const awaitedtag =await Hashtag.findOne({title:tagid})
+     tagId=awaitedtag._id;
 
     }
 
-    if(obj.creator === undefined )
-   { delete obj.creator;}
+    console.log(tagId)
+    const cat = req.query.category
+    const category = await Category.find({ title: cat })
 
-    if(obj.hashtags === undefined )
-    {delete obj.hashtags;}
 
+    let page = req.query.page;
+    const obj = {
+        creator: req.userId,
+        hashtags: tagId,
+        category: category
+
+    }
+
+    if (obj.creator === undefined) { delete obj.creator; }
+
+    if (obj.hashtags === undefined) { delete obj.hashtags; }
+    if (obj.category.length === 0) { delete obj.category; }
 
     console.log(obj)
     try {
 
-        console.log(page)
         const PER_PAGE = 2;
         if (!page) {
             page = 1;
         }
         const countNotes = await Note.find(obj).countDocuments()
-        console.log(countNotes)
+
+       //localhost:8080/note/get-notes/62d580729be05ed1c0b0a004?page=1&category=sport&sort=true&order=-1
+        let notes;
+        if (req.query.sort) {
+
+            notes = await Note.find(obj)
+                .sort({ updatedAt: req.query.order })
+                .skip((page - 1) * PER_PAGE)
+                .limit(PER_PAGE)
 
 
 
-
-
-    const notes= await Note.find(obj)
-            .sort({ updatedAt: -1 })
+        } else {
+            notes = await Note.find(obj)
             .skip((page - 1) * PER_PAGE)
             .limit(PER_PAGE)
-        if (!notes) {
-            res.status(404).json({ message: 'no notes to fetch' })
         }
-        res.status(200).json({ note: notes, countNotes: 'countNotes' })
+
+        console.log('note length is :', notes.length)
+        if (notes.length === 0) {
+            return res.status(404).json({ message: 'no notes to fetch' })
+        }
+        res.status(200).json({ note: notes, countNotes: countNotes })
 
 
 
     } catch (err) { next(err) }
 
 }
-
-// export const fetchByTags=async(req,res,next)=>{
-// try{const tagId=req.params.tagId;
-// const tag=await Hashtag.findOne({_id:tagId})
-// if (!tag) {
-//     const error = new Error('no tag with this id')
-//     error.statusCode = 404;
-//     throw error
-
-// }
-
-// let page=req.query.page;
-// console.log(page)
-// const PER_PAGE=2;
-// if(!page){
-//     page=1;
-// }
-// const countNotes=await Note.find({creator:req.userId,hashtags:tagId}).countDocuments()
-// console.log(countNotes)
-// const notes = await
-// Note.find({creator:req.userId,hashtags:tagId})
-// .sort({updatedAt:-1})
-// .skip((page-1)*PER_PAGE)
-// .limit(PER_PAGE)
-// if(!notes){
-// res.status(404).json({message:'no notes to fetch'})
-// }
-// res.status(200).json({note:notes,countNotes:countNotes})}
-// catch(err){next(err)}
-
-// }
