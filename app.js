@@ -5,40 +5,19 @@ import mongoose from 'mongoose'
 import compression  from 'compression';
 import noteRoutes from './routes/note.js'
 import categoryRoutes from './routes/category.js'
-import multer from 'multer';
+import helmet from 'helmet'
 import cors from 'cors'
 
-import path, { dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const APP_PORT =process.env.PORT || 8080 ;
 console.log(process.env.MONGO_PASSWORD,process.env.MONGO_USER,process.env.EMAIL,process.env.EMAIL_PASSWORD)
 
 const app = express()
+
+app.use(helmet())
 app.use(compression())
 app.use(bodyParser.json())
-
-
-
 app.use(cors())
-app.use('/images', express.static(path.join(__dirname, 'images')))
-const fileStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'images');
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + file.originalname)
-  }
-
- 
-})
-
-
-
-app.use(multer({ storage: fileStorage }).single('image'))
 
 app.use('/category',categoryRoutes)
 app.use('/note',noteRoutes)

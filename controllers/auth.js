@@ -10,10 +10,10 @@ if (process.env.PORT) {
   URL = 'https://final-for-eurisko.herokuapp.com';
 }
 
-// import nodemailer from 'nodemailer'
-// import transporter from '../util/nodemailer.js'
-let nodemailer;
-let transporter;
+ import nodemailer from 'nodemailer'
+import transporter from '../util/nodemailer.js'
+// let nodemailer;
+// let transporter;
 
 import User from '../models/user.js'
 
@@ -58,23 +58,23 @@ export const signup = async (req, res, next) => {
     });
     const result = await user.save();
     //console.log('before sending email;')
-    const sendedemail = await transporter.sendMail({
-      from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
-      to: email, // list of receivers
-      subject: "Hello to assaf  ✔", // Subject line
-      text: "welcome for submitting", // plain text body
-      html: `
-    <h2>Thanks for signing up with Assaf !
-    You must follow this link within 1 hour of registration to activate your account:</h2>
-      <a href="${URL}/auth/getverified/${token}">Click Here</a>
-      <h3>Have fun, and don't hesitate to contact us with your feedback.<h3>
+    // const sendedemail = await transporter.sendMail({
+    //   from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
+    //   to: email, // list of receivers
+    //   subject: "Hello to assaf  ✔", // Subject line
+    //   text: "welcome for submitting", // plain text body
+    //   html: `
+    // <h2>Thanks for signing up with Assaf !
+    // You must follow this link within 1 hour of registration to activate your account:</h2>
+    //   <a href="${URL}/auth/getverified/${token}">Click Here</a>
+    //   <h3>Have fun, and don't hesitate to contact us with your feedback.<h3>
 
-         <a href="http://localhost:8080/about">The Assaf Team!</a>`,
-    });
+    //      <a href="http://localhost:8080/about">The Assaf Team!</a>`,
+    // });
 
-    if (sendedemail) {
-      console.log('sending email : DONE!')
-    }
+    // if (sendedemail) {
+    //   console.log('sending email : DONE!')
+    // }
 
     res.status(201).json({
        message: 'User created!',
@@ -175,7 +175,7 @@ export const login = async (req, res, next) => {
         userId: user._id.toString()
       },
       'secret',
-      { expiresIn: '24h' }
+      { expiresIn: '1h' }
     );
     const checkIp = await User.find({ "IpAddress.Ip": { "$in" : [clientIp]} ,_id:user._id})
    
@@ -186,19 +186,19 @@ export const login = async (req, res, next) => {
       user.IpAddress.IpTokenExpires=Date.now() + 3600000;
       console.log('sending token.....')
       await user.save()
-      await transporter.sendMail({
-        from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
-        to: email,
-        subject: "Verify Login from New Location", // Subject line
-        text: `Welcome ${user.name} Lagain !`, // plain text body
-        html: `<h1>IP ADDRESS : ${clientIp} </h1>
-              <h2>It looks like someone tried to log into your account from a new location.
-               If this is you, follow the link below to authorize logging in from this location on your account.
-               If this isn't you, we suggest changing your password as soon as possible.</h2>
-                  <a href="${URL}/auth/ipVerification/${token}">Click Here</a>
+      // await transporter.sendMail({
+      //   from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
+      //   to: email,
+      //   subject: "Verify Login from New Location", // Subject line
+      //   text: `Welcome ${user.name} Lagain !`, // plain text body
+      //   html: `<h1>IP ADDRESS : ${clientIp} </h1>
+      //         <h2>It looks like someone tried to log into your account from a new location.
+      //          If this is you, follow the link below to authorize logging in from this location on your account.
+      //          If this isn't you, we suggest changing your password as soon as possible.</h2>
+      //             <a href="${URL}/auth/ipVerification/${token}">Click Here</a>
     
-                     <a href="${URL}/about">The Assaf Team!</a>`,
-      });
+      //                <a href="${URL}/about">The Assaf Team!</a>`,
+      // });
 return      res.status(301).json({token:token,message:'please check your enail to verify this new location'})
     }
     res.status(200).json({ token: token, userId: user._id.toString() });

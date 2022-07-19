@@ -6,6 +6,11 @@ const hashtagSchema = new Schema({
         type: String,
         unique: true,
         required: true
+      },
+      counter :{
+        type:Number,
+        required:true,
+        default:1
       }
     }
     ,

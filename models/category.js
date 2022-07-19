@@ -6,7 +6,17 @@ const categorySchema = new Schema({
        type :String,
        unique:true,
        required:true
-    }
+    },
+    counter :{
+        type:Number,
+        required:true,
+        default:1
+      },
+    creator :{
+      type: Schema.Types.ObjectId,
+      ref:'Category',
+      required: true
+  }
  }
     ,
     
