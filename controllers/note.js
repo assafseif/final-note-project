@@ -157,26 +157,29 @@ export const editNote       //localhost:8080/note/edit-note/id       method= PUT
             let note = await Note.findById({ _id: noteId })
            
             if (!note) {
+                
                 const error = new Error('there no Note with this Id')
                 error.statusCode = 404;
                 throw error
 
             }
             if (note.creator.toString() !== req.userId) {
-                
+               
                 const error = new Error('you are not athenticated to here')
                 error.statusCode = 401;
                 throw error
             }
+            
             note.title = title;
             note.description = description;
 
             const noteCategory = await Category.findOne({ _id: note.category });
-
+           
 
             const categoryExist = await Category.findOne({ title: category })
-
+            
             if (categoryExist) {
+                
                 if (categoryExist.title !== noteCategory.title) {
                     categoryExist.counter = categoryExist.counter + 1;
                     await categoryExist.save()
@@ -191,19 +194,23 @@ export const editNote       //localhost:8080/note/edit-note/id       method= PUT
                 category_ID = categoryExist._id
                 console.log(`Category with this title : ${categoryExist.title} exist so we dont need to inser new one!`)
             }
+            
 
             else if (!categoryExist) {
+                
                 noteCategory.counter = noteCategory.counter - 1;
                 
                 await noteCategory.save()
+                
                 console.log('inserting new category....')
                 const newCategory = new Category({ title: category, creator: req.userId })
                 const awaitedcategory = await newCategory.save()
                 category_ID = awaitedcategory._id
+                
             }
-
+            
             note.category = category_ID;
-
+            
             const hashtagArray=note.hashtags
             
                 for(let i =0;i<hashtagArray.length;i++){
@@ -249,7 +256,7 @@ export const editNote       //localhost:8080/note/edit-note/id       method= PUT
 
                 const awaitedNote = await note.save()
                 
-                return res.status(201).json({ note: awaitedNote, message: 'done' })
+                 res.status(200).json({ note: awaitedNote, message: 'done' })
 
             
        
@@ -269,7 +276,7 @@ export const deleteNote     //localhost:8080/note/delete-note/id       method= D
         try {
             const user = await User.findById(req.userId);
             const note = await Note.findById({ _id: noteId })
-
+            
             if (!note) {
                 const error = new Error('there no Note to delete')
                 error.statusCode = 404;
@@ -277,6 +284,7 @@ export const deleteNote     //localhost:8080/note/delete-note/id       method= D
 
             }
             if (note.creator.toString() !== req.userId) {
+                
                 console.log(note.creator.toString(), req.userId)
                 const error = new Error('you are not athenticated to here')
                 error.statusCode = 401;
@@ -294,25 +302,23 @@ export const deleteNote     //localhost:8080/note/delete-note/id       method= D
             const hashtagss = note.hashtags
 
 
-
+           
             for (let i = 0; i < hashtagss.length; i++) {
                 const p = hashtagss[i]
                 const tagExist = await Hashtag.findOne({ _id: p })
                 tagExist.counter = tagExist.counter - 1;
-                if (tagExist.counter < 0) {
-                    tagExist.counter = 0
-                }
+                // if (tagExist.counter < 0) {
+                //     tagExist.counter = 0
+                // }
                 await tagExist.save()
 
             }
 
 
-
-
             user.notes.pull(note._id);
             await user.save()
             const deleteNote = await Note.findByIdAndDelete(noteId)
-            res.json({ message: 'delete note', deleteNote: deleteNote })
+            res.status(200).json({ message: 'delete note', deleteNote: deleteNote })
 
         }
         catch (err) { next(err) }
@@ -328,7 +334,6 @@ export const fetchAll       //localhost:8080/note/get-notes?page=2&category=spor
 
         let page = req.query.page;
         const tags = req.body.tags
-        console.log(tags)
 
         let TagsToSearch = [];
         if (tags) {
@@ -345,15 +350,13 @@ export const fetchAll       //localhost:8080/note/get-notes?page=2&category=spor
             }
         }
 
-        console.log('this array        ', TagsToSearch)
-
-
         const cat = req.query.category
         const category = await Category.find({ title: cat })
-        if (!category) {
-            const error = new Error('we cant find this category, Please enter a valid one')
-            error.statusCode = 404
-            throw error
+        if (cat && category.length === 0) {
+            return res.status(404).json({message:'we cant find this category, Please enter a valid one'})
+            // const error = new Error('we cant find this category, Please enter a valid one')
+            // error.statusCode = 404
+            // throw error
         }
 
         let forHashtag;
@@ -379,11 +382,8 @@ export const fetchAll       //localhost:8080/note/get-notes?page=2&category=spor
 
 
 
-        if (obj.creator === undefined) { delete obj.creator; }
-
         if (obj.category.length === 0) { delete obj.category; }
 
-        console.log('this obj        ', obj)
         try {
 
             const PER_PAGE = 2;
@@ -395,8 +395,6 @@ export const fetchAll       //localhost:8080/note/get-notes?page=2&category=spor
             let notes;
             if (req.query.sort) {
 
-                console.log(req.query)
-                console.log('bel if')
                 notes = await Note.find(obj)
                     .sort({ updatedAt: req.query.order })
                     .skip((page - 1) * PER_PAGE)
@@ -405,7 +403,6 @@ export const fetchAll       //localhost:8080/note/get-notes?page=2&category=spor
 
 
             } else {
-                console.log('bel else')
                 notes = await Note.find(obj)
                     .skip((page - 1) * PER_PAGE)
                     .limit(PER_PAGE)
@@ -417,7 +414,7 @@ export const fetchAll       //localhost:8080/note/get-notes?page=2&category=spor
             }
             res.status(200).json({ note: notes, countNotes: countNotes })
 
-
+            
 
         } catch (err) { next(err) }
 

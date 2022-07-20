@@ -49,7 +49,6 @@ router.patch('/change/password', isauth,
     ]
     , AuthController.changePassword);
 
-router.post('/testpdf', AuthController.test)
 
 
 router.patch('/reset/password/:token', [

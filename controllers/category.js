@@ -82,7 +82,9 @@ export const createCategory //localhost:8080/category/add-category      method=p
                 console.log('inserting new category....')
                 const newcategory = new Category({
                     title: category,
-                    creator: req.userId
+                    creator: req.userId,
+                    counter:0
+
                 })
                 const awaitedcategory = await newcategory.save()
                 res.status(201).json({ message: 'new category created!', category: awaitedcategory })

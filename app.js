@@ -1,10 +1,15 @@
 import express from 'express'
-import authRoutes from './routes/auth.js'
+
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose'
 import compression  from 'compression';
 import noteRoutes from './routes/note.js'
+
+import authRoutes from './routes/auth.js'
 import categoryRoutes from './routes/category.js'
+import ExtraRoutes from './routes/extra.js'
+
+
 import helmet from 'helmet'
 import cors from 'cors'
 
@@ -19,6 +24,7 @@ app.use(compression())
 app.use(bodyParser.json())
 app.use(cors())
 
+app.use('/extra',ExtraRoutes)
 app.use('/category',categoryRoutes)
 app.use('/note',noteRoutes)
 app.use('/auth',authRoutes);
