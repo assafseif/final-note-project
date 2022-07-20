@@ -59,7 +59,7 @@ router.patch('/reset/password/:token', [
 
 router.post('/ipVerification/:token', AuthController.IpVerification)
 
-
+router.post('/resed/token',AuthController.resendToken)
 
 
 export default router;

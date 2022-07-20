@@ -10,17 +10,50 @@ if (process.env.PORT) {
   URL = 'https://final-for-eurisko.herokuapp.com';
 }
 
- import nodemailer from 'nodemailer'
+import nodemailer from 'nodemailer'
 import transporter from '../util/nodemailer.js'
 // let nodemailer;
 // let transporter;
 
 import User from '../models/user.js'
 
+
+
+
+export const resendToken = async (req, res, next) => {
+  const email = req.body.email;
+  try {
+    const user = await User.findOne({ email: email })
+    const token = crypto.randomBytes(32).toString('hex')
+    const sendedemail = await transporter.sendMail({
+      from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
+      to: email, // list of receivers
+      subject: "Hello to assaf  ✔", // Subject line
+      text: "welcome for submitting", // plain text body
+      html: `
+  <h2>Thanks for signing up with Assaf !
+  You must follow this link within 1 hour of registration to activate your account:</h2>
+    <a href="${URL}/auth/getverified/${token}">Click Here</a>
+    <h3>Have fun, and don't hesitate to contact us with your feedback.<h3>
+
+       <a href="http://localhost:8080/about">The Assaf Team!</a>`,
+    });
+
+    if (sendedemail) {
+      console.log('sending email : DONE!')
+    }
+    user.userToken = token,
+      user.userTokenExpires = Date.now() + 3600000
+    const awaitedUser = await user.save();
+    res.status(200).json({ message: 'token in your email', user: awaitedUser })
+  }
+catch(err){next(err)}
+}
+
 export const signup = async (req, res, next) => {
 
   let clientIp = requestip.getClientIp(req);
-  
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const error = new Error('Validation failed.');
@@ -32,7 +65,7 @@ export const signup = async (req, res, next) => {
   const name = req.body.name;
   const password = req.body.password;
   const token = crypto.randomBytes(32).toString('hex')
-  
+
   try {
     const hashedpassword = await bcrypt.hash(password, 12);
 
@@ -76,7 +109,7 @@ export const signup = async (req, res, next) => {
     }
 
     res.status(201).json({
-       message: 'User created!',
+      message: 'User created!',
       message_email: 'email sended',
       user: user
     });
@@ -106,7 +139,7 @@ export const login = async (req, res, next) => {
     //   error.statusCode = 401;
     //   throw error;
     // }
-   
+
 
     let Forbiddentemporary;
     if (user.wrongPassword.Forbidden || Date.now() < user.wrongPassword.ForbiddenTime.getTime()) {
@@ -176,13 +209,13 @@ export const login = async (req, res, next) => {
       'secret',
       { expiresIn: '1h' }
     );
-    const checkIp = await User.find({ "IpAddress.Ip": { "$in" : [clientIp]} ,_id:user._id})
-   
+    const checkIp = await User.find({ "IpAddress.Ip": { "$in": [clientIp] }, _id: user._id })
+
     if (checkIp.length <= 0) {
 
       const token = crypto.randomBytes(32).toString('hex')
-      user.IpAddress.IpToken=token;
-      user.IpAddress.IpTokenExpires=Date.now() + 3600000;
+      user.IpAddress.IpToken = token;
+      user.IpAddress.IpTokenExpires = Date.now() + 3600000;
       console.log('sending token.....')
       await user.save()
       await transporter.sendMail({
@@ -198,7 +231,7 @@ export const login = async (req, res, next) => {
     
                      <a href="${URL}/about">The Assaf Team!</a>`,
       });
-return      res.status(301).json({token:token,message:'please check your enail to verify this new location'})
+      return res.status(301).json({ token: token, message: 'please check your enail to verify this new location' })
     }
     res.status(200).json({ token: token, userId: user._id.toString() });
     return user;
@@ -221,7 +254,7 @@ export const getVerified = async (req, res, next) => {
     const user = await User.findOne({ userToken: resetToken, userTokenExpires: { $gt: Date.now() } })
 
     if (!user) {
-    
+
       const error = new Error('we cant find user with this token')
       error.statusCode = 401;
       throw error;
@@ -260,7 +293,7 @@ export const postResetpassword = async (req, res, next) => {
     error.statusCode = 404;
     throw error;
   }
-  
+
 
   const hashedpassword = await bcrypt.hash(password, 12)
 
@@ -285,7 +318,7 @@ export const getResetpassword = async (req, res, next) => {
   try {
     const user = await User.findOne({ email: email })
     const token = crypto.randomBytes(32).toString('hex')
-    
+
     if (!user) {
       const error = new Error('No user found');
       error.statusCode = 404;
@@ -348,29 +381,29 @@ export const changePassword = async (req, res, next) => {
 
 }
 
-export const IpVerification=async(req,res,next)=>{
-console.log('IpVerificcation')
-try{
-  const token = req.params.token;
-  //console.log(token)
-  const user = await User.findOne({"IpAddress.IpToken":token,"IpAddress.IpTokenExpires": { $gt: Date.now() }});
-  //console.log(user)
-  if (!user) {
-    const error = new Error('No user found');
-    error.statusCode = 404;
-    throw error;
-  }
-  
-  let clientIp = requestip.getClientIp(req);
-  
-  
-  user.IpAddress.Ip.push(clientIp);// we can also check if the ip is the same when he tried to login but 
-  user.IpAddress.IpToken='';
-  user.IpAddress.IpTokenExpires=0;
-  const updatedUser =await user.save()
-  res.status(200).json({message:"Done! You can now login from this new location "})
-return updatedUser;
-}catch(err){next(err)}
+export const IpVerification = async (req, res, next) => {
+  console.log('IpVerificcation')
+  try {
+    const token = req.params.token;
+    //console.log(token)
+    const user = await User.findOne({ "IpAddress.IpToken": token, "IpAddress.IpTokenExpires": { $gt: Date.now() } });
+    //console.log(user)
+    if (!user) {
+      const error = new Error('No user found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    let clientIp = requestip.getClientIp(req);
+
+
+    user.IpAddress.Ip.push(clientIp);// we can also check if the ip is the same when he tried to login but 
+    user.IpAddress.IpToken = '';
+    user.IpAddress.IpTokenExpires = 0;
+    const updatedUser = await user.save()
+    res.status(200).json({ message: "Done! You can now login from this new location " })
+    return updatedUser;
+  } catch (err) { next(err) }
 
 
 }
