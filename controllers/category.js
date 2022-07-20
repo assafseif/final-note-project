@@ -64,7 +64,7 @@ export const createCategory //localhost:8080/category/add-category      method=p
     = async (req, res, next) => {
         try {
             const error = validationResult(req)
-           
+
             if (!error.isEmpty()) {
                 const error = new Error('invalid input')
                 error.statusCode = 422;
@@ -72,7 +72,12 @@ export const createCategory //localhost:8080/category/add-category      method=p
             }
             const category = req.body.category;
             const fetchedCategory = await Category.findOne({ title: category })
-            //const user = await User.findById(req.userId)
+            const user = await User.findById(req.userId)
+            if (!user) {
+                const error = new Error('something went wrong')
+                error.statusCode = 404
+                throw error
+            }
             if (!fetchedCategory) {
                 console.log('inserting new category....')
                 const newcategory = new Category({
@@ -80,10 +85,10 @@ export const createCategory //localhost:8080/category/add-category      method=p
                     creator: req.userId
                 })
                 const awaitedcategory = await newcategory.save()
-                return res.status(201).json({ message: 'new category created!', category: awaitedcategory })
-
+                res.status(201).json({ message: 'new category created!', category: awaitedcategory })
+                return awaitedcategory
             }
-            return res.status(409).json({ message: "this category is already exist" })
+            res.status(409).json({ message: "this category is already exist" })
         }
 
         catch (err) { next(err) }
@@ -107,6 +112,7 @@ export const editCategory   //localhost:8080/category/edit-category/id   method=
 
         try {
             const category = await Category.findById(categoryId);
+            
             if (!category) {
                 const error = new Error('we cannot find category with this id')
                 error.statusCode = 404;
@@ -153,12 +159,14 @@ export const deleteCategory //localhost:8080/category/delete-category/id    meth
         const categoryId = req.params.categoryid;
         try {
             const category = await Category.findById(categoryId);
+
             if (!category) {
                 const error = new Error('we cannot find category with this id')
                 error.statusCode = 404;
                 throw error;
             }
             if (req.userId !== category.creator.toString()) {
+                console.log('error')
                 const error = new Error('Unauthorized')
                 error.statusCode = 401;
                 throw error;
@@ -166,40 +174,32 @@ export const deleteCategory //localhost:8080/category/delete-category/id    meth
 
             const notes = await Note.find({ creator: req.userId, category })
 
-            const main = async () => {
 
+
+            if (notes.length > 0) {
 
                 for (let i = 0; i < notes.length; i++) {
                     const note = notes[i]
                     if (note.category) {
+
                         const error = new Error('we cannot delete category if it exist in a note')
                         error.statusCode = 405;
                         throw error
                     }
                 }
-
-                const awaiteddelete = await Category.findByIdAndDelete(categoryId)
-                res.json({ awaiteddelete: awaiteddelete })
             }
+            
 
-            main()
-
-
-
-
-
-
-
-
-
-
+            const awaiteddelete = await Category.findByIdAndDelete(categoryId)
+            res.status(200).json({ awaiteddelete: awaiteddelete })
+            return awaiteddelete
 
 
             ///////////////////////////////// 2nd option if you want to delete category and delete field in note
             //   const notes = await Note.find({ creator: req.userId, category })
             // const CategoryIdObjectId = mongoose.Types.ObjectId(categoryId);
 
-            //     const main = async () => {
+          
 
 
             //         for (let i = 0; i < notes.length; i++) {
@@ -212,7 +212,7 @@ export const deleteCategory //localhost:8080/category/delete-category/id    meth
             //         res.json({ awaiteddelete: awaiteddelete})
             //     }
 
-            //     main()
+            
 
 
 

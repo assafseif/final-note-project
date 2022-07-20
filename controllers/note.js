@@ -11,7 +11,7 @@ export const createNote     //localhost:8080/note/create-note       method=POST
         try {
             const error = validationResult(req)
             let creator;
-            //console.log(req.userId)
+            
             if (!error.isEmpty()) {
                 const error = new Error('invalid input')
                 error.statusCode = 422;
@@ -28,7 +28,7 @@ export const createNote     //localhost:8080/note/create-note       method=POST
             }
             let category_ID;
             const { tags, title, description, category } = req.body;
-            console.log(category)
+            
             const categoryExist = await Category.findOne({ title: category })
 
             if (categoryExist) {
@@ -45,7 +45,7 @@ export const createNote     //localhost:8080/note/create-note       method=POST
                 const awaitedcategory = await newCategory.save()
                 category_ID = awaitedcategory._id
             }
-            console.log(category_ID)
+            
 
             const note = new Note({
                 title: title,
@@ -88,7 +88,7 @@ export const createNote     //localhost:8080/note/create-note       method=POST
                 }
 
                 awaitedNote = await note.save()
-                //console.log(awaitedNote)
+               
                 user.notes.push(awaitedNote._id)
                 await user.save()
                 return res.status(201).json({ note: awaitedNote, message: 'done' })
@@ -131,7 +131,7 @@ export const getNote        //localhost:8080/note/get-note/id       method=GET
                 error.statusCode = 401;
                 throw error
             }
-            console.log(note)
+            
             res.status(200).json({ message: 'note fetched', note: note })
             return note;
         }
@@ -154,8 +154,8 @@ export const editNote       //localhost:8080/note/edit-note/id       method= PUT
         const noteId = req.params.noteId;
         try {
             let category_ID;
-            const note = await Note.findById({ _id: noteId })
-            console.log(note)
+            let note = await Note.findById({ _id: noteId })
+           
             if (!note) {
                 const error = new Error('there no Note with this Id')
                 error.statusCode = 404;
@@ -163,7 +163,7 @@ export const editNote       //localhost:8080/note/edit-note/id       method= PUT
 
             }
             if (note.creator.toString() !== req.userId) {
-                console.log(note.creator.toString(), req.userId)
+                
                 const error = new Error('you are not athenticated to here')
                 error.statusCode = 401;
                 throw error
@@ -171,7 +171,7 @@ export const editNote       //localhost:8080/note/edit-note/id       method= PUT
             note.title = title;
             note.description = description;
 
-            const noteCategory = await Category.findOne({_id:note.category});
+            const noteCategory = await Category.findOne({ _id: note.category });
 
 
             const categoryExist = await Category.findOne({ title: category })
@@ -182,9 +182,7 @@ export const editNote       //localhost:8080/note/edit-note/id       method= PUT
                     await categoryExist.save()
 
                     noteCategory.counter = noteCategory.counter - 1;
-                    if(noteCategory.counter<0){
-                        noteCategory.counter=0
-                    }
+                   
                     await noteCategory.save()
 
 
@@ -195,70 +193,66 @@ export const editNote       //localhost:8080/note/edit-note/id       method= PUT
             }
 
             else if (!categoryExist) {
+                noteCategory.counter = noteCategory.counter - 1;
+                
+                await noteCategory.save()
                 console.log('inserting new category....')
-                const newCategory = new Category({ title: category })
+                const newCategory = new Category({ title: category, creator: req.userId })
                 const awaitedcategory = await newCategory.save()
                 category_ID = awaitedcategory._id
             }
+
             note.category = category_ID;
 
+            const hashtagArray=note.hashtags
+            
+                for(let i =0;i<hashtagArray.length;i++){
+                    const p=hashtagArray[i]
+                    const tag=await Hashtag.findOne({_id:p})
+                      
+                    
+                    tag.counter=tag.counter-1;
+                    await tag.save()
 
-            let awaitedNote;
-            let temporary = [];
+            }
 
-            const noteHashtagsArray = note.hashtags;
-            const main = async () => {
-                const splited = tags.split(' ')
 
-                for (let i = 0; i < splited.length; i++) {
+            note.hashtags=[];
+            
+                if (tags) {
+                    const splited = tags.split(' ')
 
-                    for (let j=0;j<noteHashtagsArray.length;j++)
-                    {
-                        const temp=noteHashtagsArray[j]
+                    for (let i = 0; i < splited.length; i++) {
                         const p = splited[i]
                         const tagExist = await Hashtag.findOne({ title: p })
-                        const OnenoteHashtag = await Hashtag.findOne({ _id: temp })
-
+                        console.log(tagExist ? 'EXIST!' : 'Inserting..')
                         if (tagExist) {
-                            if(OnenoteHashtag.title !== tagExist.title ){
-                                OnenoteHashtag.counter=OnenoteHashtag.counter-1;
-                                if(OnenoteHashtag.counter<0){
-                                    OnenoteHashtag.counter=0;
-                                }
-                                await OnenoteHashtag.save()
-                                tagExist.counter=tagExist.counter+1;
-                                await tagExist.save();
+                            tagExist.counter = tagExist.counter + 1;
+                            await tagExist.save()
+                            note.hashtags.push(tagExist._id)
 
-                            }
-                            temporary.push(tagExist._id)
-    
                         }
                         else
                             if (!tagExist) {
                                 const hashtags = new Hashtag({
                                     title: p
                                 })
-    
+
                                 let awaitedTags = await hashtags.save()
-                                temporary.push(awaitedTags._id)
-    
-    
+                                note.hashtags.push(awaitedTags._id)
+
+
                             }
 
-
                     }
-                   
-
                 }
-                note.hashtags = temporary
-                awaitedNote = await note.save()
 
-                res.json({ note: awaitedNote })
-            }
+                const awaitedNote = await note.save()
+                
+                return res.status(201).json({ note: awaitedNote, message: 'done' })
 
-            main()
-
-
+            
+       
 
 
 
@@ -266,6 +260,8 @@ export const editNote       //localhost:8080/note/edit-note/id       method= PUT
         } catch (err) { next(err) }
     }
 
+
+            
 export const deleteNote     //localhost:8080/note/delete-note/id       method= DELETE
     = async (req, res, next) => {
         const noteId = req.params.noteId;
