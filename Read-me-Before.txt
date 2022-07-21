@@ -49,7 +49,7 @@ EXTRA {
 
 }
 we can change by: for example deleting hashtag when the counter is 0,
-Or let suppose we can make the fetching notes public and all user can see and search for them
+Or let suppose we can make the fetching notes public and all users can see and search for them
 the client can review and tell us what he exactly want.
 
 
