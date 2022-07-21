@@ -130,6 +130,41 @@ describe('Auth Controller', function () {
 
     User.findOne.restore();
   });
+  
+  
+    it('should response a 200 if the email get verified', function (done) {
+      const req = {
+        params: {
+          token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFzc2FmX3NlaWZAb3V0bG9vay5jb20iLCJ1c2VySWQiOiI2MmM5YTc1OTBlMTZjODBjZjhjZjhiMDYiLCJpYXQiOjE2NTczODUwNTgsImV4cCI6MTY1NzM4ODY1OH0.2Cj9UBoF_Pt0-9Nt5u4KAlIN5bxHlIoIDipeCrQdpBo'
+
+        }
+      }
+      const res = {
+        statusCode: 500,
+        message: null,
+        status: function (code) {
+          this.statusCode = code
+          return this
+        },
+        json: function (data) {
+          this.message = data.message
+        }
+      }
+
+  let data;
+      AuthController.getVerified(req, res, () => { })
+        .then((user) => {console.log(user)
+          data =user.toJSON()
+          expect(res.statusCode).to.be.equal(200);
+          expect(data.emailVerified).to.be.equal(true)
+          done()
+        }).catch(done);
+
+
+
+
+    })
+
     it('should send a response with valid in login', function (done) {
 
       sinon.stub(requestip, 'getClientIp')
@@ -172,39 +207,6 @@ describe('Auth Controller', function () {
 
 
 
-
-    it('should response a 200 if the email get verified', function (done) {
-      const req = {
-        params: {
-          token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFzc2FmX3NlaWZAb3V0bG9vay5jb20iLCJ1c2VySWQiOiI2MmM5YTc1OTBlMTZjODBjZjhjZjhiMDYiLCJpYXQiOjE2NTczODUwNTgsImV4cCI6MTY1NzM4ODY1OH0.2Cj9UBoF_Pt0-9Nt5u4KAlIN5bxHlIoIDipeCrQdpBo'
-
-        }
-      }
-      const res = {
-        statusCode: 500,
-        message: null,
-        status: function (code) {
-          this.statusCode = code
-          return this
-        },
-        json: function (data) {
-          this.message = data.message
-        }
-      }
-
-  let data;
-      AuthController.getVerified(req, res, () => { })
-        .then((user) => {console.log(user)
-          data =user.toJSON()
-          expect(res.statusCode).to.be.equal(200);
-          expect(data.emailVerified).to.be.equal(true)
-          done()
-        }).catch(done);
-
-
-
-
-    })
 
 
 
