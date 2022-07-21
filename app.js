@@ -37,8 +37,8 @@ app.use((error, req, res, next) => {
     res.status(status).json({ message: message, data: data });
   });
 
-mongoose.connect(`mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.gglhiyb.mongodb.net/?retryWrites=true&w=majority`)
-//mongoose.connect('mongodb://localhost:27017')
+//mongoose.connect(`mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.gglhiyb.mongodb.net/?retryWrites=true&w=majority`)
+mongoose.connect('mongodb://localhost:27017')
 .then((client)=>{
 
 app.listen( APP_PORT || 8080 ,()=>{
@@ -50,4 +50,4 @@ app.listen( APP_PORT || 8080 ,()=>{
 
 
 
-//last update 7/21/2022 4:11 PM
+//last update 7/21/2022 5:05 PM

@@ -296,9 +296,9 @@ export const deleteNote     //localhost:8080/note/delete-note/id       method= D
 
             category.counter = category.counter - 1;
 
-            if (category.counter < 0) {
-                category.counter = 0
-            }
+            // if (category.counter < 0) {
+            //     category.counter = 0
+            // }
             await category.save()
 
             const hashtagss = note.hashtags
