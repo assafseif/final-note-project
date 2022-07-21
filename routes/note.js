@@ -15,7 +15,7 @@ router.post('/create-note',[
     .isLength({min : 5 , max:55}).withMessage('enter a valid category betweene this Range 5--->55 '),
     
     body('category')
-    .isLength({min :5}).withMessage('enter a valid category betweene this Range 5--->15 ')
+    .isLength({min :5,max:15}).withMessage('enter a valid category betweene this Range 5--->15 ')
     
 
 ],isAuth,noteController.createNote)
@@ -32,7 +32,7 @@ router.put('/edit-note/:noteId',[
     .isLength({min : 5 , max:55}).withMessage('enter a valid category betweene this Range 5--->55 '),
 
     body('category')
-    .isLength({min :5}).withMessage('enter a valid category betweene this Range 5--->15 ')
+    .isLength({min :5,max:15}).withMessage('enter a valid category betweene this Range 5--->15 ')
     
 ],isAuth,noteController.editNote)
 
