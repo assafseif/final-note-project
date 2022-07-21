@@ -2,6 +2,8 @@ To whom is reading
 
 
 AUTHENTICATION{
+    RESENTOKEN : localhost:8080/auth/resend/token method=POST
+
     SIGNUP :  localhost:8080/auth/signup        method=POST
 
     LOGIN : localhost:8080/auth/login       method=POST
