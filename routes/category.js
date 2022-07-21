@@ -13,7 +13,7 @@ router.get('/get-category/:categoryid',isAuth,categoryController.fetchCategory)
 router.post('/add-category',
 [
     body('category')
-    .isLength({min :5}).withMessage('enter a valid category betweene this Range 5--->15 ')
+    .isLength({min :5,max:15}).withMessage('enter a valid category betweene this Range 5--->15 ')
    
 ],isAuth,categoryController.createCategory)
 
@@ -21,7 +21,7 @@ router.post('/add-category',
 router.put('/edit-category/:categoryid',
 [
     body('category')
-    .isLength({min :5}).withMessage('enter a valid category betweene this Range 5--->15 ')
+    .isLength({min :5,max:15}).withMessage('enter a valid category betweene this Range 5--->15 ')
    
 ]
 ,isAuth,categoryController.editCategory)
