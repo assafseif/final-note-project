@@ -1,5 +1,6 @@
 To whom is reading
 
+
 AUTHENTICATION{
     SIGNUP :  localhost:8080/auth/signup        method=POST
 
@@ -35,7 +36,7 @@ EDIT_NOTE :     localhost:8080/note/edit-note/id       method= PUT
 
 DELETE_NOTE :   localhost:8080/note/delete-note/id       method= DELETE
 
-FETCH_ALL   :   localhost:8080/note/get-notes?page=2&category=sport&sort=true&order=-1     method=GET (if you want you can search by tag in body)
+FETCH_ALL   :   localhost:8080/note/get-notes?page=2&category=sport&sort=true&order=-1     method=GET (if you want you can search by tag in body,we can make fetching note public for all)
                         
 
 }
@@ -45,10 +46,13 @@ EXTRA {
 
 
 }
+we can change by: for example deleting hashtag when the counter is 0,
+Or let suppose we can make the fetching notes public and all user can see and search for them
+the client can review and tell us what he exactly want.
 
 
-            BEST REGARDS ,
-            ASSAF.
+                                        BEST REGARDS ,
+                                        ASSAF.
 
 
 

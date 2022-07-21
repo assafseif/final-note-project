@@ -32,6 +32,7 @@ export const resendToken    //localhost:8080/auth/resend/token
       text: "welcome for submitting", 
       html: `
   <h2>Thanks for signing up with Assaf !
+  Resending Token
   You must follow this link within 1 hour of registration to activate your account:</h2>
     <a href="${URL}/auth/getverified/${token}">Click Here</a>
     <h3>Have fun, and don't hesitate to contact us with your feedback.<h3>
