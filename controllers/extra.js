@@ -36,6 +36,11 @@ export const Popular = async (req, res, next) => {
         
         display.push(toDisplay)
     }
+    if(avgLength === 0){
+        const error = new Error('something went wrong or there is no data')
+        error.statusCode=404;
+        throw error
+    }
     
     myDoc.font('Times-Roman')
     .fontSize(12)

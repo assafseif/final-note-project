@@ -38,7 +38,7 @@ router.post('/login', AuthController.login);
 
 router.post('/getverified/:token', AuthController.getVerified);
 
-router.get('/reset/password', isauth, AuthController.getResetpassword);
+router.post('/reset/password', isauth, AuthController.SendResetpassword );
 
 
 router.patch('/change/password', isauth,
@@ -59,7 +59,7 @@ router.patch('/reset/password/:token', [
 
 router.post('/ipVerification/:token', AuthController.IpVerification)
 
-router.post('/resed/token',AuthController.resendToken)
+router.post('/resend/token',AuthController.resendToken)
 
 
 export default router;

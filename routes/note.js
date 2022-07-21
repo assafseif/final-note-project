@@ -7,19 +7,33 @@ const { body } = pkg
 const router = Router();
 
 router.post('/create-note',[
-    body('title')
-    .isLength({ min: 5 }),
+     body('title')
+    .isLength({min : 5 , max:15}).withMessage('enter a valid title between this Range 5--->15 ')
+    .isAlpha().withMessage('Alphabetic Only'),
+
     body('description')
-    .isLength({min : 5})
+    .isLength({min : 5 , max:55}).withMessage('enter a valid category betweene this Range 5--->55 '),
+    
+    body('category')
+    .isLength({min :5}).withMessage('enter a valid category betweene this Range 5--->15 ')
+    .isAlpha().withMessage('Alphabetic Only')
+
 ],isAuth,noteController.createNote)
 
 router.get('/get-note/:noteId',isAuth,noteController.getNote);
 
 router.put('/edit-note/:noteId',[
+   
     body('title')
-    .isLength({ min: 5 }),
+    .isLength({min : 5 , max:15}).withMessage('enter a valid title between this Range 5--->15 ')
+    .isAlpha().withMessage('Alphabetic Only'),
+
     body('description')
-    .isLength({min : 5})
+    .isLength({min : 5 , max:55}).withMessage('enter a valid category betweene this Range 5--->55 '),
+
+    body('category')
+    .isLength({min :5}).withMessage('enter a valid category betweene this Range 5--->15 ')
+    .isAlpha().withMessage('Alphabetic Only')
 ],isAuth,noteController.editNote)
 
 router.delete('/delete-note/:noteId',isAuth,noteController.deleteNote)

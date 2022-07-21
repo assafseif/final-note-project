@@ -113,7 +113,7 @@ it('should send response 201  when creating new category',function(done){
     }).catch(done)
 
  })
-it('should send response 409  when creating new category',function(done){
+it('should send response 409  if exist',function(done){
     const req= {
         body :{category:'tester'},
         userId:'5c0f66b979af55031b347282'
@@ -254,7 +254,7 @@ it('should send response 200 when we edit',function(done){
     ControllerCategory.editCategory(req,res,()=>{})
     .then(()=>{
         expect(res.category.title).to.be.equal(req.body.category)
-        expect(res.statusCode).to.be.equal(201)
+        expect(res.statusCode).to.be.equal(200)
        done() 
     }).catch(done)
 

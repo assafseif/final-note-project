@@ -63,13 +63,14 @@ export const fetchCategory  //localhost:8080/category/get-category/id   method=g
 export const createCategory //localhost:8080/category/add-category      method=post
     = async (req, res, next) => {
         try {
-            const error = validationResult(req)
+            const errors = validationResult(req)
 
-            if (!error.isEmpty()) {
-                const error = new Error('invalid input')
+            if (!errors.isEmpty()) {
+                const error = new Error('Validation failed.');
                 error.statusCode = 422;
+                error.data = errors.array();
                 throw error;
-            }
+              }
             const category = req.body.category;
             const fetchedCategory = await Category.findOne({ title: category })
             const user = await User.findById(req.userId)
@@ -105,12 +106,13 @@ export const editCategory   //localhost:8080/category/edit-category/id   method=
     = async (req, res, next) => {
         const categoryId = req.params.categoryid;
         const newCategory = req.body.category;
-        const error = validationResult(req)
-        if (!error.isEmpty()) {
-            const error = new Error('invalid input')
+        const errors = validationResult(req)
+        if (!errors.isEmpty()) {
+            const error = new Error('Validation failed.');
             error.statusCode = 422;
+            error.data = errors.array();
             throw error;
-        }
+          }
 
         try {
             const category = await Category.findById(categoryId);
@@ -145,7 +147,7 @@ export const editCategory   //localhost:8080/category/edit-category/id   method=
             // console.log('inserting a new category')
             category.title = newCategory;
             const awaitedCategory = await category.save()
-            res.status(201).json({ message: 'editing done!', category: awaitedCategory })
+            res.status(200).json({ message: 'editing done!', category: awaitedCategory })
 
 
         }

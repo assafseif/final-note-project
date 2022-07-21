@@ -4,7 +4,6 @@ import mongoose from 'mongoose'
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import bcrypt from 'bcryptjs'
-import PDFDocument from 'pdfkit'
 let URL = 'http://localhost:8080';
 if (process.env.PORT) {
   URL = 'https://final-for-eurisko.herokuapp.com';
@@ -20,16 +19,17 @@ import User from '../models/user.js'
 
 
 
-export const resendToken = async (req, res, next) => {
+export const resendToken    //localhost:8080/auth/resend/token
+= async (req, res, next) => {  
   const email = req.body.email;
   try {
     const user = await User.findOne({ email: email })
     const token = crypto.randomBytes(32).toString('hex')
     const sendedemail = await transporter.sendMail({
-      from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
-      to: email, // list of receivers
-      subject: "Hello to assaf  ✔", // Subject line
-      text: "welcome for submitting", // plain text body
+      from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', 
+      to: email, 
+      subject: "Hello to assaf  ✔", 
+      text: "welcome for submitting", 
       html: `
   <h2>Thanks for signing up with Assaf !
   You must follow this link within 1 hour of registration to activate your account:</h2>
@@ -50,7 +50,8 @@ export const resendToken = async (req, res, next) => {
 catch(err){next(err)}
 }
 
-export const signup = async (req, res, next) => {
+export const signup =       //localhost:8080/auth/signup
+ async (req, res, next) => {
 
   let clientIp = requestip.getClientIp(req);
 
@@ -61,9 +62,8 @@ export const signup = async (req, res, next) => {
     error.data = errors.array();
     throw error;
   }
-  const email = req.body.email;
-  const name = req.body.name;
-  const password = req.body.password;
+  const {email , name ,password}=req.body;
+ 
   const token = crypto.randomBytes(32).toString('hex')
 
   try {
@@ -91,10 +91,10 @@ export const signup = async (req, res, next) => {
     const result = await user.save();
     console.log('before sending email;')
     const sendedemail = await transporter.sendMail({
-      from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
-      to: email, // list of receivers
-      subject: "Hello to assaf  ✔", // Subject line
-      text: "welcome for submitting", // plain text body
+      from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', 
+      to: email, 
+      subject: "Hello to assaf  ✔", 
+      text: "welcome for submitting", 
       html: `
     <h2>Thanks for signing up with Assaf !
     You must follow this link within 1 hour of registration to activate your account:</h2>
@@ -122,7 +122,8 @@ export const signup = async (req, res, next) => {
   }
 };
 
-export const login = async (req, res, next) => {
+export const login =        //localhost:8080/auth/login
+ async (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
   let clientIp = requestip.getClientIp(req);
@@ -134,11 +135,11 @@ export const login = async (req, res, next) => {
       error.statusCode = 401;
       throw error;
     }
-    // if (!user.emailVerified) {
-    //   const error = new Error('Not authorized please verify your email first');
-    //   error.statusCode = 401;
-    //   throw error;
-    // }
+    if (!user.emailVerified) {
+      const error = new Error('Not authorized please verify your email first');
+      error.statusCode = 401;
+      throw error;
+    }
 
 
     let Forbiddentemporary;
@@ -219,10 +220,10 @@ export const login = async (req, res, next) => {
       console.log('sending token.....')
       await user.save()
       await transporter.sendMail({
-        from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
+        from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', 
         to: email,
-        subject: "Verify Login from New Location", // Subject line
-        text: `Welcome ${user.name} again !`, // plain text body
+        subject: "Verify Login from New Location", 
+        text: `Welcome ${user.name} again !`, 
         html: `<h1>IP ADDRESS : ${clientIp} </h1>
               <h2>It looks like someone tried to log into your account from a new location.
                If this is you, follow the link below to authorize logging in from this location on your account.
@@ -245,11 +246,10 @@ export const login = async (req, res, next) => {
 };
 
 
-
-export const getVerified = async (req, res, next) => {
+export const getVerified  
+ = async (req, res, next) => {
   const resetToken = req.params.token;
-  console.log(resetToken)
-  //
+  
   try {
     const user = await User.findOne({ userToken: resetToken, userTokenExpires: { $gt: Date.now() } })
 
@@ -275,8 +275,8 @@ export const getVerified = async (req, res, next) => {
 }
 
 
-
-export const postResetpassword = async (req, res, next) => {
+export const postResetpassword 
+= async (req, res, next) => {
   const error = validationResult(req);
   if (!error.isEmpty()) {
     const error = new Error('Password validation error ');
@@ -311,7 +311,8 @@ export const postResetpassword = async (req, res, next) => {
 
 }
 
-export const getResetpassword = async (req, res, next) => {
+export const SendResetpassword    //localhost:8080/auth/reset/password
+= async (req, res, next) => {
   const email = req.body.email;
 
 
@@ -330,10 +331,10 @@ export const getResetpassword = async (req, res, next) => {
     const usersaved = await user.save();
 
     await transporter.sendMail({
-      from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', // sender address
-      to: email, // list of receivers
-      subject: "Reset your Password", // Subject line
-      text: "Welcome again !", // plain text body
+      from: '"Assaf seif expert 👻" <assaf_Seif@outlook.com>', 
+      to: email, 
+      subject: "Reset your Password", 
+      text: "Welcome again !", 
       html: `
             <h2>Someone (hopefully you) has requested a password reset for your  account. Follow the link below to set a new password::</h2>
                 <a href="${URL}/auth/reset/password/${token}">Click Here</a>
@@ -355,7 +356,8 @@ export const getResetpassword = async (req, res, next) => {
 
 }
 
-export const changePassword = async (req, res, next) => {
+export const changePassword        //localhost:8080/auth/change/password
+= async (req, res, next) => {
   const error = validationResult(req);
   if (!error.isEmpty()) {
     const error = new Error('Password validation error ');
@@ -381,7 +383,8 @@ export const changePassword = async (req, res, next) => {
 
 }
 
-export const IpVerification = async (req, res, next) => {
+export const IpVerification 
+= async (req, res, next) => {
   console.log('IpVerificcation')
   try {
     const token = req.params.token;

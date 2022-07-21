@@ -9,14 +9,15 @@ import { validationResult } from 'express-validator'
 export const createNote     //localhost:8080/note/create-note       method=POST
     = async (req, res, next) => {
         try {
-            const error = validationResult(req)
+            const errors = validationResult(req)
             let creator;
             
-            if (!error.isEmpty()) {
-                const error = new Error('invalid input')
+            if (!errors.isEmpty()) {
+                const error = new Error('Validation failed.');
                 error.statusCode = 422;
+                error.data = errors.array();
                 throw error;
-            }
+              }
             const user = await User.findOne({ _id: req.userId })
 
             if (!user) {
@@ -144,13 +145,14 @@ export const getNote        //localhost:8080/note/get-note/id       method=GET
 
 export const editNote       //localhost:8080/note/edit-note/id       method= PUT
     = async (req, res, next) => {
-        const error = validationResult(req)
+        const errors = validationResult(req)
         const { tags, title, description, category } = req.body;
-        if (!error.isEmpty()) {
-            const error = new Error('invalid input')
+        if (!errors.isEmpty()) {
+            const error = new Error('Validation failed.');
             error.statusCode = 422;
+            error.data = errors.array();
             throw error;
-        }
+          }
         const noteId = req.params.noteId;
         try {
             let category_ID;

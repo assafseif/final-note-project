@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken'
 import sinon from 'sinon'
 
 describe('Authentication', function () {
-    it('should throw an error if no authoruzation header is present', function () {
+    it('should throw an error if there is no headers', function () {
         const req = {
             get: function () {
                 return null;
@@ -20,7 +20,7 @@ describe('Authentication', function () {
     });
 
 
-    it('should throw error if the authorization is one string', function () {
+    it('should throw error if there is one string', function () {
         const req = {
             get: function () {
                 return 'xyxyz'
@@ -31,7 +31,7 @@ describe('Authentication', function () {
 
 
     })
-    it('should yield userId after decoding token', function () {
+    it('should give userId after decoding token', function () {
         const req = {
             get: function () {
                 return 'Bearer asdasdadasdasd456'
