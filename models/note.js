@@ -12,7 +12,7 @@ const noteSchema = new Schema({
     },
     creator :{
         type: Schema.Types.ObjectId,
-        ref:'Category',
+        ref:'User',
         required: true
     },
     category: {
